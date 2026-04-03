@@ -17,10 +17,8 @@ function AuthListener() {
           email: user.email,
         };
         dispatch(setUser(userData));
-        console.log("logged in", user.email)
       } else {
         dispatch(clearUser());
-        console.log("user logged out")
       }
     });
 

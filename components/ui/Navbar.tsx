@@ -1,9 +1,9 @@
 "use client"
 
 import { useDispatch, useSelector } from "react-redux"
-import { openModal } from "../redux/modalSlice"
+import { openModal } from "../../redux/modalSlice"
 import { signOut } from "firebase/auth"
-import { auth } from "../firebase/firebase"
+import { auth } from "../../firebase/firebase"
 
 
 
