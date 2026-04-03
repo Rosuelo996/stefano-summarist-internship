@@ -48,12 +48,12 @@ function AuthModal() {
         console.log("user created");
       }
 
-      dispatch(closeModal());
-      router.push("/for-you");
-
       setEmail("");
       setPassword("");
       setError("");
+      dispatch(closeModal());
+      router.push("/for-you");
+      
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -127,8 +127,8 @@ function AuthModal() {
 
   return (
     <div id="auth-modal">
-      <div className="wrapper wrapper__full">
-        <div className="sidebar__overlay sidebar__overlay--hidden"></div>
+      <div className="wrapper__modal">
+        <div className="overlay overlay--hidden"></div>
         <div className="auth__wrapper">
           <div className="auth">
             <div className="auth__content">
