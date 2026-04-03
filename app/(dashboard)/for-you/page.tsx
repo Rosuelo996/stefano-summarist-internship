@@ -18,7 +18,6 @@ const [selectedData, recommendedData, suggestedData] = await Promise.all([
 const selectedBook = selectedData[0]
 
   return (
-    <div className="wrapper">
       <div className="row">
         <div className="container">
           <div className="for-you__wrapper">
@@ -28,7 +27,6 @@ const selectedBook = selectedData[0]
           </div>
         </div>
       </div>
-    </div>
   );
 }
 
