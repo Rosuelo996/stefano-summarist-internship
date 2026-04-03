@@ -8,13 +8,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   return (
     <>
+    <div className="wrapper">
     <Search setIsSidebarOpen={setIsSidebarOpen} />
       <div
         className={isSidebarOpen ? "overlay" : "overlay overlay--hidden"}
         onClick={() => setIsSidebarOpen(false)}
       ></div>
       <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-      {children}
+      {children}  
+    </div>
+    
     </>
   );
 }
