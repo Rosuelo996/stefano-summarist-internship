@@ -1,23 +1,36 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-const initialState = {
+type ModalFlow = "default" | "payment";
+
+type ModalState = {
+  isOpen: boolean;
+  flow: ModalFlow;
+};
+
+const initialState: ModalState = {
   isOpen: false,
-}
+  flow: "default",
+};
 
 export const modalSlice = createSlice({
-  name: 'modal',
+  name: "modal",
   initialState,
   reducers: {
-    openModal: (state) => {
-      state.isOpen = true;
+    openModal: {
+      reducer: (state, action: PayloadAction<ModalFlow>) => {
+        state.isOpen = true;
+        state.flow = action.payload;
+      },
+      prepare: (flow: ModalFlow = "default") => ({
+        payload: flow,
+      }),
     },
     closeModal: (state) => {
       state.isOpen = false;
+      state.flow = "default";
     },
   },
-})
+});
 
-// Action creators are generated for each case reducer function
-export const { openModal, closeModal } = modalSlice.actions
-
-export default modalSlice.reducer
+export const { openModal, closeModal } = modalSlice.actions;
+export default modalSlice.reducer;
