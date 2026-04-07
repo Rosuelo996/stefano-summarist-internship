@@ -23,11 +23,11 @@ function AuthModal() {
   const [success, setSuccess] = useState("");
   const router = useRouter();
   const dispatch = useDispatch();
-  const isOpen = useSelector(
-    (state: { modal: { isOpen: boolean } }) => state.modal.isOpen,
+  const { isOpen, flow } = useSelector(
+    (state: { modal: { isOpen: boolean; flow: string } }) => state.modal,
   );
 
-  // LOGIN/SIGN UP 
+  // LOGIN/SIGN UP
   const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError("");
@@ -42,18 +42,18 @@ function AuthModal() {
     try {
       if (mode === "login") {
         await signInWithEmailAndPassword(auth, email, password);
-        console.log("logged in");
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        console.log("user created");
       }
 
       setEmail("");
       setPassword("");
       setError("");
       dispatch(closeModal());
-      router.push("/for-you");
-      
+
+      if (flow !== "payment") {
+        router.push("/for-you");
+      }
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -91,6 +91,12 @@ function AuthModal() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+
+      dispatch(closeModal());
+
+      if (flow !== "payment") {
+        router.push("/for-you");
+      }
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -160,14 +166,18 @@ function AuthModal() {
                       disabled={isLoading}
                     >
                       <span>
-                        {isLoading ? <div className="spinner"></div>  : "Send reset password link"}
+                        {isLoading ? (
+                          <div className="spinner"></div>
+                        ) : (
+                          "Send reset password link"
+                        )}
                       </span>
                     </button>
                   </form>
                 </>
               ) : (
                 <>
-                  {mode === "login" && (
+                  {mode === "login" && flow !== "payment" && (
                     <>
                       <button
                         className="btn guest__btn--wrapper"
@@ -223,11 +233,13 @@ function AuthModal() {
 
                     <button className="btn" type="submit" disabled={isLoading}>
                       <span>
-                        {isLoading
-                          ? <div className="spinner"></div>
-                          : mode === "login"
-                            ? "Login"
-                            : "Sign up"}
+                        {isLoading ? (
+                          <div className="spinner"></div>
+                        ) : mode === "login" ? (
+                          "Login"
+                        ) : (
+                          "Sign up"
+                        )}
                       </span>
                     </button>
                   </form>

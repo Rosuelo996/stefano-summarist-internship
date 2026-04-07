@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 import Landing from "../components/home/Landing";
 import Features from "../components/home/Features";
 import Reviews from "../components/home/Reviews";
