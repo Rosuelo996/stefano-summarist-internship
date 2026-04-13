@@ -3,10 +3,10 @@ import {
   RiTimeLine,
   RiMicLine,
   RiLightbulbLine,
-  RiBookmarkLine,
 } from "react-icons/ri";
 import BookActions from "../../../../components/for-you/BookActions";
-
+import BookDuration from "../../../../components/for-you/BookDuration";
+import BookImage from "../../../../components/for-you/BookImage";
 
 async function BookPage({ params }) {
   const { id } = await params;
@@ -22,11 +22,9 @@ async function BookPage({ params }) {
         <div className="container">
           <div className="book-details__wrapper">
             <div className="book-details">
-              <div className="book-details__title">{book.title}</div>
+              <div className="book-details__title">{book.title} {book.subscriptionRequired && "(Premium)"}</div>
               <div className="book-details__author">{book.author}</div>
-              <div className="book-details__subtitle">
-                {book.subTitle}
-              </div>
+              <div className="book-details__subtitle">{book.subTitle}</div>
 
               <div className="book-details__content">
                 <div className="book-details__description-wrapper">
@@ -45,7 +43,9 @@ async function BookPage({ params }) {
                     <div className="book-details__icon">
                       <RiTimeLine size={24} />
                     </div>
-                    <div className="book-details__duration">04:52</div>
+                    <div className="book-details__duration">
+                      <BookDuration audioLink={book.audioLink} />
+                    </div>
                   </div>
                   <div className="book-details__description">
                     <div className="book-details__icon">
@@ -57,21 +57,14 @@ async function BookPage({ params }) {
                     <div className="book-details__icon">
                       <RiLightbulbLine size={24} />
                     </div>
-                    <div className="book-details__key-ideas">{book.keyIdeas} Key Ideas</div>
+                    <div className="book-details__key-ideas">
+                      {book.keyIdeas} Key Ideas
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <BookActions book={book}/>
-
-              <div className="book-details__bookmark">
-                <div className="book-details__bookmark-icon">
-                  <RiBookmarkLine size={24} />
-                </div>
-                <div className="book-details__bookmark-text">
-                  Add title to My Library
-                </div>
-              </div>
+              <BookActions book={book} />
 
               <h2 className="book-details__secondary-title">
                 What&apos;s it about?
@@ -93,10 +86,11 @@ async function BookPage({ params }) {
             </div>
             <div className="book-details__img-container">
               <figure className="book-details__img-wrapper">
-                <img
-                  className="book-details__img"
+                <BookImage
                   src={book.imageLink}
-                  alt=""
+                  alt={book.title}
+                  className="book-details__img"
+                  skeletonClassName="book-details__img-skeleton"
                 />
               </figure>
             </div>

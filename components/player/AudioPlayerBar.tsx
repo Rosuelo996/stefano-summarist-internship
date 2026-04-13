@@ -2,18 +2,21 @@
 import { useEffect, useRef, useState } from "react";
 import { BsFillPauseFill, BsFillPlayFill } from "react-icons/bs";
 import { RiForward10Line, RiReplay10Line } from "react-icons/ri";
+import { useSelector } from "react-redux";
+import { db } from "../../firebase/firebase";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 type Props = {
   book: any;
 };
 
 function AudioPlayerBar({ book }: Props) {
-  console.log(book.audioLink);
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeProgress, setTimeProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const progressPercentage = duration ? (timeProgress / duration) * 100 : 0;
+  const user = useSelector((state: any) => state.auth.user);
 
   useEffect(() => {
     if (isPlaying) {
@@ -51,7 +54,7 @@ function AudioPlayerBar({ book }: Props) {
   const skipForward = () => {
   if (!audioRef.current) return;
   audioRef.current.currentTime = Math.min(
-    audioRef.current.currentTime + 15,
+    audioRef.current.currentTime + 10,
     duration
   );
 };
@@ -59,9 +62,36 @@ function AudioPlayerBar({ book }: Props) {
 const skipBackward = () => {
   if (!audioRef.current) return;
   audioRef.current.currentTime = Math.max(
-    audioRef.current.currentTime - 15,
+    audioRef.current.currentTime - 10,
     0
   );
+};
+
+const handleEnded = async () => {
+  if (!user) return;
+
+  const bookRef = doc(db, "customers", user.uid, "library", String(book.id));
+  const booksnapshot = await getDoc(bookRef)
+
+  if (booksnapshot.exists()) {
+    await updateDoc(bookRef, {
+     isFinished: true,
+    });
+  } else {
+    await setDoc(bookRef, {
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      subTitle: book.subTitle,
+      imageLink: book.imageLink,
+      audioLink: book.audioLink,
+      averageRating: book.averageRating,
+      subscriptionRequired: book.subscriptionRequired,
+      isSaved: false,
+      isFinished: true,
+    })
+  }
+    
 };
 
   return (
@@ -71,6 +101,7 @@ const skipBackward = () => {
         src={book.audioLink}
         onLoadedMetadata={handleLoadedMetadata}
         onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
       ></audio>
       <div className="audio__track--wrapper">
         <figure className="audio__track--img-mask">

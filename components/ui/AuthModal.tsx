@@ -19,6 +19,7 @@ function AuthModal() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("login");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingButton, setLoadingButton] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
@@ -32,10 +33,13 @@ function AuthModal() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+    setLoadingButton("form");
 
     if (!email || !password) {
       setError("Please fill all fields");
       setIsLoading(false);
+      setLoadingButton("");
+
       return;
     }
 
@@ -60,6 +64,7 @@ function AuthModal() {
       }
     } finally {
       setIsLoading(false);
+      setLoadingButton("");
     }
   };
 
@@ -67,8 +72,9 @@ function AuthModal() {
 
   // GUEST LOGIN
   async function handleGuestLogin() {
-    setIsLoading(true);
     setError("");
+    setIsLoading(true);
+    setLoadingButton("guest");
 
     try {
       await signInWithEmailAndPassword(auth, "guest@gmail.com", "guest123");
@@ -81,12 +87,14 @@ function AuthModal() {
       }
     } finally {
       setIsLoading(false);
+      setLoadingButton("");
     }
   }
 
   async function handleGoogleLogin() {
     setError("");
     setIsLoading(true);
+    setLoadingButton("google");
 
     try {
       const provider = new GoogleAuthProvider();
@@ -103,18 +111,21 @@ function AuthModal() {
       }
     } finally {
       setIsLoading(false);
+      setLoadingButton("");
     }
   }
 
-  // GOOGLE LOGIN
+  // RESET PASSWORD
   async function handleResetPassword() {
     setError("");
     setSuccess("");
     setIsLoading(true);
+    setLoadingButton("reset");
 
     if (!email) {
       setError("Please enter your email");
       setIsLoading(false);
+      setLoadingButton("");
       return;
     }
 
@@ -128,6 +139,7 @@ function AuthModal() {
       }
     } finally {
       setIsLoading(false);
+      setLoadingButton("");
     }
   }
 
@@ -163,10 +175,10 @@ function AuthModal() {
                       className="btn"
                       type="button"
                       onClick={handleResetPassword}
-                      disabled={isLoading}
+                      disabled={loadingButton === "reset"}
                     >
                       <span>
-                        {isLoading ? (
+                        {loadingButton === "reset" ? (
                           <div className="spinner"></div>
                         ) : (
                           "Send reset password link"
@@ -182,12 +194,18 @@ function AuthModal() {
                       <button
                         className="btn guest__btn--wrapper"
                         onClick={handleGuestLogin}
-                        disabled={isLoading}
+                        disabled={loadingButton === "guest"}
                       >
                         <figure className="google__icon--mask guest__icon--mask">
                           <FaUser size={24} />
                         </figure>
-                        <div>Login as Guest</div>
+                        <div>
+                          {loadingButton === "guest" ? (
+                            <div className="spinner"></div>
+                          ) : (
+                            "Login as Guest"
+                          )}
+                        </div>
                       </button>
 
                       <div className="auth__separator">
@@ -199,15 +217,19 @@ function AuthModal() {
                   <button
                     className="btn google__btn--wrapper"
                     onClick={handleGoogleLogin}
-                    disabled={isLoading}
+                    disabled={loadingButton === "google"}
                   >
                     <figure className="google__icon--mask">
                       <img src="/google.png" alt="" />
                     </figure>
                     <div>
-                      {mode === "login"
-                        ? "Login with Google"
-                        : "Sign up with Google"}
+                      {loadingButton === "google" ? (
+                        <div className="spinner"></div>
+                      ) : mode === "login" ? (
+                        "Login with Google"
+                      ) : (
+                        "Sign up with Google"
+                      )}
                     </div>
                   </button>
 
@@ -231,9 +253,13 @@ function AuthModal() {
                       onChange={(e) => setPassword(e.target.value)}
                     />
 
-                    <button className="btn" type="submit" disabled={isLoading}>
+                    <button
+                      className="btn"
+                      type="submit"
+                      disabled={loadingButton === "form"}
+                    >
                       <span>
-                        {isLoading ? (
+                        {loadingButton === "form" ? (
                           <div className="spinner"></div>
                         ) : mode === "login" ? (
                           "Login"
