@@ -30,7 +30,10 @@ function Sidebar({ isSidebarOpen, setIsSidebarOpen }: Props) {
   return (
     <div className={`sidebar ${isSidebarOpen ? "sidebar--opened" : ""}`}>
       <div className="sidebar__logo">
+        <Link href={"/"}>
         <img src="/logo.png" alt="" />
+        </Link>
+        
       </div>
       <div className="sidebar__wrapper">
         <div className="sidebar__top">

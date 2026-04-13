@@ -1,32 +1,36 @@
 "use client";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { db } from "../../../firebase/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { openModal } from "../../../redux/modalSlice";
+import LoginPrompt from "../../../components/shared/LoginPrompt";
 
 function Settings() {
   const user = useSelector((state: any) => state.auth.user);
-  const dispatch = useDispatch();
   const [subscription, setSubscription] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-
     async function getSubscription() {
+      if (!user) {
+      setIsLoading(false);
+      return;
+    }
+
+      setIsLoading(true);
+
       const ref = collection(db, "customers", user.uid, "subscriptions");
       const snapshot = await getDocs(ref);
 
-      snapshot.forEach((doc) => {
-        setSubscription(doc.data());
-      });
+      const doc = snapshot.docs[0];
+      if (doc) setSubscription(doc.data());
+
+      setIsLoading(false);
     }
 
     getSubscription();
   }, [user]);
-
-  console.log(subscription);
 
   let planName = "Basic";
 
@@ -49,30 +53,42 @@ function Settings() {
         <div className="row">
           <div className="section__title page__title">Settings</div>
           {!user ? (
-            <div className="settings__login--wrapper">
-              <img src="/login.png" alt="" />
-            <div className="settings__login--text">Log in to your account to see your details</div>
-            <button 
-            className="btn settings__login--btn"
-            onClick={() => dispatch(openModal())}>Login</button>
-            </div>
-            ) : (
-          <>
-          <div className="settings__content">
-            <div className="settings__subtitle">Your Subscription Plan</div>
-            <div className="settings__text">{planName}</div>
-            {planName === "Basic" && (
-              <a href="/choose-plan" className="btn settings__upgrade--btn">
-                Upgrade to Premium
-              </a>
-            )}
-          </div>
-          <div className="settings__content">
-            <div className="settings__subtitle">Email</div>
-            <div className="settings__text">{user?.email}</div>
-          </div>
-          </>
-        )}
+            <LoginPrompt />
+          ) : isLoading ? (
+            <>
+              <div className="settings__content">
+                <div className="settings__subtitle">Your Subscription Plan</div>
+                <div className="settings__text">
+                  <div className="skeleton settings__text-skeleton"></div>
+                </div>
+
+                <div className="skeleton settings__btn-skeleton"></div>
+              </div>
+
+              <div className="settings__content">
+                <div className="settings__subtitle">Email</div>
+                <div className="settings__text">
+                  <div className="skeleton settings__text-skeleton long"></div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="settings__content">
+                <div className="settings__subtitle">Your Subscription Plan</div>
+                <div className="settings__text">{planName}</div>
+                {planName === "Basic" && (
+                  <a href="/choose-plan" className="btn settings__upgrade--btn">
+                    Upgrade to Premium
+                  </a>
+                )}
+              </div>
+              <div className="settings__content">
+                <div className="settings__subtitle">Email</div>
+                <div className="settings__text">{user?.email}</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
