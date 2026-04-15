@@ -30,7 +30,6 @@ function AudioPlayerBar({ book }: Props) {
     if (!audioRef.current) return;
     const seconds = audioRef.current.duration;
     if (seconds !== undefined) {
-      console.log(seconds);
       setDuration(seconds);
     }
   };

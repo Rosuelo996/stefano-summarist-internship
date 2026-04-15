@@ -53,79 +53,74 @@ function BookActions({ book }: Props) {
   }, [user, book.id]);
 
   useEffect(() => {
-  async function getSubscription() {
-    if (!user) {
-      setSubscription(null);
+    async function getSubscription() {
+      if (!user) {
+        setSubscription(null);
+        setIsLoadingSubscription(false);
+        return;
+      }
+
+      setIsLoadingSubscription(true);
+
+      const ref = collection(db, "customers", user.uid, "subscriptions");
+      const snapshot = await getDocs(ref);
+
+      const activeSub = snapshot.docs.find((doc) => {
+        const data = doc.data();
+        return data.status === "active" || data.status === "trialing";
+      });
+
+      if (activeSub) {
+        setSubscription(activeSub.data());
+      } else {
+        setSubscription(null);
+      }
+
       setIsLoadingSubscription(false);
-      return;
     }
 
-    setIsLoadingSubscription(true);
-
-    const ref = collection(db, "customers", user.uid, "subscriptions");
-    const snapshot = await getDocs(ref);
-
-    const activeSub = snapshot.docs.find((doc) => {
-      const data = doc.data();
-      return data.status === "active" || data.status === "trialing";
-    });
-
-    if (activeSub) {
-      setSubscription(activeSub.data());
-    } else {
-      setSubscription(null);
-    }
-
-    setIsLoadingSubscription(false);
-  }
-
-  getSubscription();
-}, [user]);
+    getSubscription();
+  }, [user]);
 
   const hasPremiumAccess =
     subscription &&
     (subscription.status === "active" || subscription.status === "trialing");
 
   function handleRead() {
-    console.log("user:", user?.email);
-console.log("subscription:", subscription);
-console.log("status:", subscription?.status);
-console.log("plan id:", subscription?.items?.[0]?.plan?.id);
-console.log("hasPremiumAccess:", hasPremiumAccess);
-  if (!user) {
-    dispatch(openModal());
-    return;
-  }
+    if (!user) {
+      dispatch(openModal());
+      return;
+    }
 
-  if (isLoadingSubscription) {
-    return;
-  }
+    if (isLoadingSubscription) {
+      return;
+    }
 
-  if (book.subscriptionRequired && !hasPremiumAccess) {
-    router.push("/choose-plan");
-    return;
-  }
+    if (book.subscriptionRequired && !hasPremiumAccess) {
+      router.push("/choose-plan");
+      return;
+    }
 
-  router.push(`/player/${book.id}`);
-}
+    router.push(`/player/${book.id}`);
+  }
 
   function handleListen() {
-  if (!user) {
-    dispatch(openModal());
-    return;
-  }
+    if (!user) {
+      dispatch(openModal());
+      return;
+    }
 
-  if (isLoadingSubscription) {
-    return;
-  }
+    if (isLoadingSubscription) {
+      return;
+    }
 
-  if (book.subscriptionRequired && !hasPremiumAccess) {
-    router.push("/choose-plan");
-    return;
-  }
+    if (book.subscriptionRequired && !hasPremiumAccess) {
+      router.push("/choose-plan");
+      return;
+    }
 
-  router.push(`/player/${book.id}`);
-}
+    router.push(`/player/${book.id}`);
+  }
 
   async function handleSave() {
     if (!user) {
