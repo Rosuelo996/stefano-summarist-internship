@@ -10,7 +10,14 @@ import { openModal } from "../../redux/modalSlice";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { db } from "../../firebase/firebase";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 type Props = {
   book: any;
@@ -21,6 +28,8 @@ function BookActions({ book }: Props) {
   const dispatch = useDispatch();
   const router = useRouter();
   const [isSaved, setIsSaved] = useState(false);
+  const [subscription, setSubscription] = useState(null);
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
 
   useEffect(() => {
     async function checkIfSaved() {
@@ -43,66 +52,118 @@ function BookActions({ book }: Props) {
     checkIfSaved();
   }, [user, book.id]);
 
-  function handleRead() {
+  useEffect(() => {
+  async function getSubscription() {
     if (!user) {
-      dispatch(openModal());
+      setSubscription(null);
+      setIsLoadingSubscription(false);
       return;
     }
-    if (book.subscriptionRequired) {
-      router.push("/choose-plan");
+
+    setIsLoadingSubscription(true);
+
+    const ref = collection(db, "customers", user.uid, "subscriptions");
+    const snapshot = await getDocs(ref);
+
+    const activeSub = snapshot.docs.find((doc) => {
+      const data = doc.data();
+      return data.status === "active" || data.status === "trialing";
+    });
+
+    if (activeSub) {
+      setSubscription(activeSub.data());
     } else {
-      router.push(`/player/${book.id}`);
+      setSubscription(null);
     }
-  }
-  function handleListen() {
-    if (!user) {
-      dispatch(openModal());
-      return;
-    }
-    if (book.subscriptionRequired) {
-      router.push("/choose-plan");
-    } else {
-      router.push(`/player/${book.id}`);
-    }
+
+    setIsLoadingSubscription(false);
   }
 
-  async function handleSave() {
+  getSubscription();
+}, [user]);
+
+  const hasPremiumAccess =
+    subscription &&
+    (subscription.status === "active" || subscription.status === "trialing");
+
+  function handleRead() {
+    console.log("user:", user?.email);
+console.log("subscription:", subscription);
+console.log("status:", subscription?.status);
+console.log("plan id:", subscription?.items?.[0]?.plan?.id);
+console.log("hasPremiumAccess:", hasPremiumAccess);
   if (!user) {
     dispatch(openModal());
     return;
   }
 
-  const bookRef = doc(db, "customers", user.uid, "library", String(book.id));
-  const bookSnapshot = await getDoc(bookRef);
+  if (isLoadingSubscription) {
+    return;
+  }
 
-  if (isSaved) {
-    await updateDoc(bookRef, {
-      isSaved: false,
-    });
-    setIsSaved(false);
-  } else {
-    if (bookSnapshot.exists()) {
-      await updateDoc(bookRef, {
-        isSaved: true,
-      });
-    } else {
-      await setDoc(bookRef, {
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        subTitle: book.subTitle,
-        imageLink: book.imageLink,
-        audioLink: book.audioLink,
-        averageRating: book.averageRating,
-        subscriptionRequired: book.subscriptionRequired,
-        isSaved: true,
-        isFinished: false,
-      });
+  if (book.subscriptionRequired && !hasPremiumAccess) {
+    router.push("/choose-plan");
+    return;
+  }
+
+  router.push(`/player/${book.id}`);
+}
+
+  function handleListen() {
+  if (!user) {
+    dispatch(openModal());
+    return;
+  }
+
+  if (isLoadingSubscription) {
+    return;
+  }
+
+  if (book.subscriptionRequired && !hasPremiumAccess) {
+    router.push("/choose-plan");
+    return;
+  }
+
+  router.push(`/player/${book.id}`);
+}
+
+  async function handleSave() {
+    if (!user) {
+      dispatch(openModal());
+      return;
     }
 
-    setIsSaved(true);
+    const bookRef = doc(db, "customers", user.uid, "library", String(book.id));
+    const bookSnapshot = await getDoc(bookRef);
+
+    if (isSaved) {
+      await updateDoc(bookRef, {
+        isSaved: false,
+      });
+      setIsSaved(false);
+    } else {
+      if (bookSnapshot.exists()) {
+        await updateDoc(bookRef, {
+          isSaved: true,
+        });
+      } else {
+        await setDoc(bookRef, {
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          subTitle: book.subTitle,
+          imageLink: book.imageLink,
+          audioLink: book.audioLink,
+          averageRating: book.averageRating,
+          subscriptionRequired: book.subscriptionRequired,
+          isSaved: true,
+          isFinished: false,
+        });
+      }
+
+      setIsSaved(true);
+    }
   }
-}
 
   return (
     <>

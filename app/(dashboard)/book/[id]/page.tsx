@@ -14,7 +14,6 @@ async function BookPage({ params }) {
     `https://us-central1-summaristt.cloudfunctions.net/getBook?id=${id}`,
   );
   const book = await res.json();
-  console.log(book);
 
   return (
     <div id="book-details">

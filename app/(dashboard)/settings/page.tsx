@@ -14,9 +14,10 @@ function Settings() {
   useEffect(() => {
     async function getSubscription() {
       if (!user) {
-      setIsLoading(false);
-      return;
-    }
+        setSubscription(null);
+        setIsLoading(false);
+        return;
+      }
 
       setIsLoading(true);
 
@@ -24,7 +25,12 @@ function Settings() {
       const snapshot = await getDocs(ref);
 
       const doc = snapshot.docs[0];
-      if (doc) setSubscription(doc.data());
+
+      if (doc) {
+        setSubscription(doc.data());
+      } else {
+        setSubscription(null);
+      }
 
       setIsLoading(false);
     }
